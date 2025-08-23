@@ -12,6 +12,10 @@
             .hash = "N-V-__8AAP6WIgI4b7FYvyJ6F7gg38lmxqvHSQPGyTlGuFuT",
             .lazy = true,
         },
+        .sdl_shadercross = .{
+            .url = "git+https://github.com/libsdl-org/SDL_shadercross#392d12afc1ef084c5cd656307180027399b7a54e",
+            .hash = "N-V-__8AAH9GBgCySY9rt5VJj3A-OGl0Z05BPZ9PgS5Pt1zm",
+        },
     },
     .paths = .{
         "build.zig",
