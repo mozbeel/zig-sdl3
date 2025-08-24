@@ -45,9 +45,9 @@ jobs:
         with:
           version: ${{ env.ZIG_VERSION }}
       - name: Build Template Linux
-        run: cd template && zig build
+        run: cd template && zig build -Dext_shadercross=true
       - name: Build Template Windows
-        run: cd template && zig build -Dtarget=x86_64-windows
+        run: cd template && zig build -Dext_shadercross=true -Dtarget=x86_64-windows
   test:
     name: Testing
     runs-on: ubuntu-latest
