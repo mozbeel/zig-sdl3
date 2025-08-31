@@ -16,6 +16,14 @@
             .url = "git+https://github.com/libsdl-org/SDL_shadercross#392d12afc1ef084c5cd656307180027399b7a54e",
             .hash = "N-V-__8AAH9GBgCySY9rt5VJj3A-OGl0Z05BPZ9PgS5Pt1zm",
         },
+        .spirv_cross = .{
+            .url = "git+https://github.com/Gota7/spirv_cross-zig#98f9223194e00030175c2b7897123c0d56541668",
+            .hash = "spirv_cross-0.0.0-bzNVZEIYAABVgWS8lbg2UuCFpIJSN8VuwnLayLrJlJnc",
+        },
+        .spirv_headers = .{
+            .url = "git+https://github.com/KhronosGroup/SPIRV-Headers#1bfd27101e4578d0284061bdf8f09fb4755c7c2d",
+            .hash = "N-V-__8AADq1MQCCoUh-qOkYXGvqKFClPzdiedYrsGFYzTV9",
+        },
     },
     .paths = .{
         "build.zig",
