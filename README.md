@@ -30,7 +30,7 @@ zig fetch --save git+https://github.com/Gota7/zig-sdl3#v0.1.1
 ```
 * For Zig master (nightly):
 ```sh
-zig fetch --save git+https://github.com/Gota7/zig-sdl3#zig-master
+zig fetch --save git+https://github.com/Gota7/zig-sdl3#master
 ```
 
 Then add zig-sdl3 as a dependency and import its modules and artifact in your `build.zig`:
