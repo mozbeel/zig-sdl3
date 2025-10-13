@@ -58,6 +58,11 @@ pub fn build(b: *std.Build) !void {
         "c_sdl_install_build_config_h",
         "Additionally install 'SDL_build_config.h' when installing SDL (default: false)",
     ) orelse false;
+    const sdl_system_include_path = b.option(
+        std.Build.LazyPath,
+        "sdl_system_include_path",
+        "System include path for SDL",
+    );
 
     const sdl_dep = b.dependency("sdl", .{
         .target = target,
@@ -71,6 +76,8 @@ pub fn build(b: *std.Build) !void {
     });
 
     const sdl_dep_lib = sdl_dep.artifact("SDL3");
+    if (sdl_system_include_path) |val|
+        sdl_dep_lib.addSystemIncludePath(val);
 
     // SDL options.
     const extension_options = b.addOptions();
