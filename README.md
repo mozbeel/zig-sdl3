@@ -27,7 +27,7 @@ The master branch of zig is not currently supported.
 Choose the command that matches your desired zig-sdl3 version and run it in your project's root directory:
 * For the latest tag release:
 ```sh
-zig fetch --save git+https://github.com/Gota7/zig-sdl3#v0.1.2
+zig fetch --save git+https://github.com/Gota7/zig-sdl3#v0.1.3
 ```
 * For in progress updates (nightly):
 ```sh
@@ -44,6 +44,11 @@ const sdl3 = b.dependency("sdl3", .{
     // Lib options.
     /// .callbacks = false,
     /// .ext_image = false,
+    /// .ext_net = false,
+    /// .ext_ttf = false,
+    /// .log_message_stack_size = 1024,
+    /// .main = false,
+    /// .renderer_debug_text_stack_size = 1024,
 
     // Options passed directly to https://github.com/castholm/SDL (SDL3 C Bindings):
     // .c_sdl_preferred_linkage = .static,

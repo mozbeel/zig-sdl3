@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) !void {
         .version = .{
             .major = 0,
             .minor = 1,
-            .patch = 1,
+            .patch = 3,
         },
     };
 
@@ -73,11 +73,32 @@ pub fn build(b: *std.Build) !void {
     const sdl_dep_lib = sdl_dep.artifact("SDL3");
 
     // SDL options.
-    const extension_options = b.addOptions();
+    const options = b.addOptions();
     const main_callbacks = b.option(bool, "callbacks", "Enable SDL callbacks rather than use a main function") orelse false;
-    extension_options.addOption(bool, "callbacks", main_callbacks);
+    options.addOption(bool, "callbacks", main_callbacks);
     const sdl3_main = b.option(bool, "main", "Enable SDL main") orelse false;
-    extension_options.addOption(bool, "main", sdl3_main);
+    options.addOption(bool, "main", sdl3_main);
+    options.addOption(
+        usize,
+        "log_message_stack_size",
+        b.option(
+            usize,
+            "log_message_stack_size",
+            "Default log message stack size",
+        ) orelse 1024,
+    );
+    options.addOption(
+        usize,
+        "renderer_debug_text_stack_size",
+        b.option(
+            usize,
+            "renderer_debug_text_stack_size",
+            "Default renderer debug text stack size",
+        ) orelse 1024,
+    );
+
+    // SDL extension options.
+    const extension_options = b.addOptions();
     const ext_image = b.option(bool, "ext_image", "Enable SDL_image extension") orelse false;
     extension_options.addOption(bool, "image", ext_image);
     const ext_net = b.option(bool, "ext_net", "Enable SDL_net extension") orelse false;
@@ -129,6 +150,7 @@ pub fn build(b: *std.Build) !void {
     };
 
     sdl3.addOptions("extension_options", extension_options);
+    sdl3.addOptions("options", options);
     sdl3.linkLibrary(sdl_dep_lib);
     if (ext_image) {
         image.setup(b, sdl3, translate_c, sdl_dep_lib, c_sdl_preferred_linkage, .{
@@ -150,7 +172,7 @@ pub fn build(b: *std.Build) !void {
     }
 
     _ = setupDocs(b, sdl3);
-    _ = setupTest(b, cfg, extension_options, c_module);
+    _ = setupTest(b, cfg, extension_options, options, c_module);
 
     _ = try setupExamples(b, sdl3, cfg, example_options);
     _ = try runExample(b, sdl3, cfg, example_options);
@@ -238,7 +260,7 @@ pub fn setupExamples(b: *std.Build, sdl3: *std.Build.Module, cfg: Config, option
     return exp;
 }
 
-pub fn setupTest(b: *std.Build, cfg: Config, extension_options: *std.Build.Step.Options, c_module: *std.Build.Module) *std.Build.Step.Compile {
+pub fn setupTest(b: *std.Build, cfg: Config, extension_options: *std.Build.Step.Options, options: *std.Build.Step.Options, c_module: *std.Build.Module) *std.Build.Step.Compile {
     const test_module = b.createModule(.{
         .root_source_file = cfg.root_source_file,
         .target = cfg.target,
@@ -252,6 +274,7 @@ pub fn setupTest(b: *std.Build, cfg: Config, extension_options: *std.Build.Step.
         .root_module = test_module,
     });
     tst.root_module.addOptions("extension_options", extension_options);
+    tst.root_module.addOptions("options", options);
     const sdl_dep = b.dependency("sdl", .{
         .target = cfg.target,
         .optimize = cfg.optimize,

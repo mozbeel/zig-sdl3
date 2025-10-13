@@ -517,7 +517,7 @@ pub const Locale = @import("locale.zig").Locale;
 pub const log = @import("log.zig");
 
 /// Main callback functions when desired.
-pub const main_callbacks = if (extension_options.callbacks) @import("main_callbacks.zig") else void;
+pub const main_callbacks = if (options.callbacks) @import("main_callbacks.zig") else void;
 
 /// Ability to call other main functions.
 ///
@@ -822,6 +822,7 @@ pub const vulkan = @import("vulkan.zig");
 
 // Others.
 const extension_options = @import("extension_options");
+const options = @import("options");
 const std = @import("std");
 
 //

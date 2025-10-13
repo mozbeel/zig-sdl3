@@ -1,10 +1,8 @@
 const c = @import("c");
 const errors = @import("errors.zig");
+const options = @import("options");
 const sdl3 = @import("sdl3.zig");
 const std = @import("std");
-
-/// Maximum stack size to use for a log message.
-const max_log_message_stack = 1024;
 
 /// The prototype for the log output callback function.
 ///
@@ -168,7 +166,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -197,7 +195,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -225,7 +223,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -253,7 +251,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -281,7 +279,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -309,7 +307,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -337,7 +335,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -365,7 +363,7 @@ pub const Category = enum(c_int) {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
         defer allocator.free(msg);
@@ -449,7 +447,7 @@ pub fn log(
     comptime fmt: []const u8,
     args: anytype,
 ) !void {
-    var fallback = std.heap.stackFallback(max_log_message_stack, sdl3.allocator);
+    var fallback = std.heap.stackFallback(options.log_message_stack_size, sdl3.allocator);
     const allocator = fallback.get();
     const msg = try std.fmt.allocPrintSentinel(allocator, fmt, args, 0);
     defer allocator.free(msg);
