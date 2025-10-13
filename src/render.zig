@@ -3,6 +3,7 @@ const blend_mode = @import("blend_mode.zig");
 const errors = @import("errors.zig");
 const events = @import("events.zig");
 const gpu = @import("gpu.zig");
+const options = @import("options");
 const pixels = @import("pixels.zig");
 const properties = @import("properties.zig");
 const rect = @import("rect.zig");
@@ -10,9 +11,6 @@ const sdl3 = @import("sdl3.zig");
 const std = @import("std");
 const surface = @import("surface.zig");
 const video = @import("video.zig");
-
-/// Maximum stack size to use for a message stack.
-const debug_text_stack = 1024;
 
 /// The size, in pixels, of a single `render.Renderer.renderDebugText()` character.
 ///
@@ -1299,7 +1297,7 @@ pub const Renderer = struct {
         comptime fmt: []const u8,
         args: anytype,
     ) !void {
-        var fallback = std.heap.stackFallback(debug_text_stack, sdl3.allocator);
+        var fallback = std.heap.stackFallback(options.renderer_debug_text_stack_size, sdl3.allocator);
         const allocator = fallback.get();
         const msg = try std.fmt.allocPrintZ(allocator, fmt, args);
         defer allocator.free(msg);
