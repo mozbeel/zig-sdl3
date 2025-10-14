@@ -1988,51 +1988,53 @@ pub fn stepUtf8(
 /// Custom allocator to use for `setMemoryFunctionsByAllocator()`.
 var custom_allocator: std.mem.Allocator = undefined;
 
-const Allocation = struct {
+// Special thanks to castholm for fixing up these allocator functions.
+const Allocation = extern struct {
     size: usize,
+    data: void align(@alignOf(std.c.max_align_t)),
 };
 
-fn allocationSize(request_size: usize) usize {
-    var size: usize = request_size;
-    while (size % @min(@sizeOf(@cImport(@cInclude("stddef.h")).max_align_t), @sizeOf(?*anyopaque) * 2) != 0) // TODO: Optimize this?
-        size += 1;
-    return size;
-}
-
-fn makeAllocation(total_size: usize, comptime memset: bool) ?[*]u8 {
-    const total_buf = custom_allocator.alloc(u8, allocationSize(total_size) + @sizeOf(Allocation)) catch return null;
-    if (memset)
-        @memset(total_buf, 0);
-    const allocation: *Allocation = @ptrCast(@alignCast(total_buf.ptr));
-    allocation.size = total_buf.len;
-    const data_ptr: [*]u8 = @ptrFromInt(@intFromPtr(total_buf.ptr) + @sizeOf(Allocation));
-    // std.debug.print("MAKE PTR: {p}, {d}\n", .{ data_ptr, allocation.size });
-    return data_ptr;
-}
-
-fn allocCalloc(num_members: usize, size: usize) ?[*]u8 {
-    return makeAllocation(num_members * size, true);
-}
-
-fn allocFree(mem: [*]u8) void {
-    const allocation: *Allocation = @ptrFromInt(@intFromPtr(mem) - @sizeOf(Allocation));
-    // std.debug.print("CLEAR PTR: {p}, {d}\n", .{ raw_ptr, allocation.size });
-    custom_allocator.free(@as([*]u8, @ptrCast(allocation))[0..allocation.size]);
+fn makeAllocation(size: usize, zero_init: bool) ?[*]u8 {
+    const bytes = custom_allocator.allocWithOptions(u8, @sizeOf(Allocation) + size, .of(Allocation), null) catch return null;
+    if (zero_init) @memset(bytes, 0);
+    const allocation: *Allocation = @ptrCast(@alignCast(bytes.ptr));
+    allocation.size = bytes.len;
+    const mem: [*]u8 = @ptrCast(&allocation.data);
+    return mem;
 }
 
 fn allocMalloc(size: usize) ?[*]u8 {
     return makeAllocation(size, false);
 }
 
+fn allocCalloc(nmemb: usize, size: usize) ?[*]u8 {
+    return makeAllocation(nmemb * size, true);
+}
+
 fn allocRealloc(mem: ?[*]u8, size: usize) ?[*]u8 {
-    const raw_ptr = mem orelse return allocMalloc(size);
-    // const allocation: *Allocation = @alignCast(@fieldParentPtr("buf", @as(*void, @ptrCast(raw_ptr))));
-    allocFree(raw_ptr);
-    return allocMalloc(size);
-    // const total_buf = custom_allocator.realloc(@as([*]u8, @ptrCast(raw_ptr))[0..allocation.size], allocationSize(size) + @sizeOf(Allocation)) catch return null;
-    // allocation = @ptrCast(@alignCast(total_buf.ptr));
-    // allocation.size = total_buf.len;
-    // return &allocation.buf;
+    const old_mem = mem orelse return allocMalloc(size);
+    const old_data: *align(@alignOf(std.c.max_align_t)) void = @ptrCast(@alignCast(old_mem));
+    const old_allocation: *Allocation = @fieldParentPtr("data", old_data);
+    const old_bytes_ptr: [*]align(@alignOf(Allocation)) u8 = @ptrCast(old_allocation);
+    const old_bytes = old_bytes_ptr[0..old_allocation.size];
+    if (custom_allocator.remap(old_bytes, @sizeOf(Allocation) + size)) |new_bytes| {
+        const new_allocation: *Allocation = @ptrCast(@alignCast(new_bytes.ptr));
+        new_allocation.size = new_bytes.len;
+        const new_mem: [*]u8 = @ptrCast(&new_allocation.data);
+        return new_mem;
+    }
+    const new_mem = makeAllocation(size, false) orelse return null;
+    @memcpy(new_mem[0..size], old_mem[0..size]);
+    custom_allocator.free(old_bytes);
+    return new_mem;
+}
+
+fn allocFree(mem: [*]u8) void {
+    const data: *align(@alignOf(std.c.max_align_t)) void = @ptrCast(@alignCast(mem));
+    const allocation: *Allocation = @fieldParentPtr("data", data);
+    const bytes_ptr: [*]align(@alignOf(Allocation)) u8 = @ptrCast(allocation);
+    const bytes = bytes_ptr[0..allocation.size];
+    custom_allocator.free(bytes);
 }
 
 /// Replace SDL's memory allocation functions to use with an allocator.
