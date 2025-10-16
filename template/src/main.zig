@@ -1,5 +1,6 @@
 const sdl3 = @import("sdl3");
 const std = @import("std");
+const builtin = @import("builtin");
 
 // Use main callbacks.
 comptime {
@@ -18,7 +19,7 @@ pub const _start = void;
 pub const WinMainCRTStartup = void;
 
 /// Allocator we will use.
-const allocator = std.heap.smp_allocator;
+const allocator = if (builtin.os.tag != .emscripten) std.heap.smp_allocator else std.heap.c_allocator;
 
 /// For logging system messages.
 const log_app = sdl3.log.Category.application;

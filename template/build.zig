@@ -39,7 +39,7 @@ fn buildWeb(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.built
     const wasm = b.addLibrary(.{
         .name = "template",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main-web.zig"),
+            .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
