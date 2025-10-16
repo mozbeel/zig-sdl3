@@ -7,6 +7,7 @@ pub fn setup(
     sdl_dep_lib: *std.Build.Step.Compile,
     linkage: std.builtin.LinkMode,
     cfg: struct { optimize: std.builtin.OptimizeMode, target: std.Build.ResolvedTarget },
+    system_include_path: ?std.Build.LazyPath,
 ) void {
     const target = cfg.target;
     const optimize = cfg.optimize;
@@ -29,6 +30,10 @@ pub fn setup(
         }),
         .linkage = linkage,
     });
+
+    if (system_include_path) |val| {
+        lib.addSystemIncludePath(val);
+    }
 
     var lib_c_flags: std.ArrayListUnmanaged([]const u8) = .empty;
     defer lib_c_flags.deinit(b.allocator);

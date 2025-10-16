@@ -37,7 +37,7 @@ fn buildWeb(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.built
     b.default_step.dependOn(activateEmsdk);
 
     const wasm = b.addLibrary(.{
-        .name = "zig_sdl3_cross_template",
+        .name = "template",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main-web.zig"),
             .target = target,
@@ -51,6 +51,7 @@ fn buildWeb(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.built
     wasm.root_module.addImport("zemscripten", zemscripten_dep.module("root"));
 
     const emsdk_dep = b.dependency("emsdk", .{});
+    const emsdk_sysroot_path = emsdk_dep.path("upstream/emscripten/cache/sysroot");
     const emsdk_sysroot_include_path = emsdk_dep.path("upstream/emscripten/cache/sysroot/include");
     // sdl3.artifact("SDL3").addSystemIncludePath(emsdk_sysroot_include_path);
 
@@ -60,13 +61,19 @@ fn buildWeb(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.built
         .callbacks = true,
         .ext_image = true,
         .sdl_system_include_path = emsdk_sysroot_include_path,
+        .sdl_sysroot_path = emsdk_sysroot_path,
     });
+
+    wasm.root_module.addSystemIncludePath(emsdk_sysroot_include_path);
+
+    const sdl_module = sdl3.module("sdl3");
+    sdl_module.addSystemIncludePath(emsdk_sysroot_include_path);
     wasm.root_module.addImport("sdl3", sdl3.module("sdl3"));
 
-    const sysroot_include = b.pathJoin(&.{ b.sysroot.?, "include" });
-    var dir = std.fs.openDirAbsolute(sysroot_include, .{ .access_sub_paths = true, .no_follow = true }) catch @panic("No emscripten cache. Generate it!");
-    dir.close();
-    wasm.addSystemIncludePath(.{ .cwd_relative = sysroot_include });
+    // const sysroot_include = b.pathJoin(&.{ b.sysroot.?, "include" });
+    // var dir = std.fs.openDirAbsolute(sysroot_include, .{ .access_sub_paths = true, .no_follow = true }) catch @panic("No emscripten cache. Generate it!");
+    // dir.close();
+    wasm.addSystemIncludePath(emsdk_sysroot_include_path);
 
     const emcc_flags = zemscripten.emccDefaultFlags(b.allocator, .{
         .optimize = optimize,
@@ -98,12 +105,28 @@ fn buildWeb(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.built
 
     var run_emrun_step = b.step("emrun", "Run the WebAssembly app using emrun");
 
+    const base_name = if (wasm.name_only_filename) |n| n else wasm.name;
+
+    // Create filename with extension
+    const html_file = try std.fmt.allocPrint(b.allocator, "{s}.html", .{base_name});
+    defer b.allocator.free(html_file);
+
+    std.debug.print("HTML FILE: {s}\n", .{html_file});
+
+    // output set in emcc_step
+    const html_path = b.pathJoin(&.{ "zig-out", "web", html_file });
+
+    std.debug.print("HTML PATH: {s}\n", .{html_path});
+
+    // Absolute path to emrun
+    const emrun_path = emsdk_dep.path("upstream/emscripten/emrun");
+
+    // System command
     const emrun_cmd = b.addSystemCommand(&.{
-        "emrun",
-        "--no_browser",
+        emrun_path.getPath(b),
         "--port",
         "8080",
-        wasm.name,
+        html_path,
     });
 
     emrun_cmd.step.dependOn(b.getInstallStep());

@@ -8,6 +8,7 @@ pub fn setup(
     sdl_dep_lib: *std.Build.Step.Compile,
     linkage: std.builtin.LinkMode,
     cfg: struct { optimize: std.builtin.OptimizeMode, target: std.Build.ResolvedTarget },
+    system_include_path: ?std.Build.LazyPath,
 ) void {
     const upstream = b.lazyDependency("sdl_image", .{}) orelse return;
 
@@ -22,6 +23,9 @@ pub fn setup(
             .link_libc = true,
         }),
     });
+    if (system_include_path) |val| {
+        lib.root_module.addSystemIncludePath(val);
+    }
     lib.root_module.linkLibrary(sdl_dep_lib);
 
     // Use stb_image for loading JPEG and PNG files. Native alternatives such as

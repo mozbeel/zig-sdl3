@@ -8,6 +8,7 @@ pub fn setup(
     sdl_dep_lib: *std.Build.Step.Compile,
     linkage: std.builtin.LinkMode,
     cfg: struct { optimize: std.builtin.OptimizeMode, target: std.Build.ResolvedTarget },
+    system_include_path: ?std.Build.LazyPath,
 ) void {
     const target = cfg.target;
     const optimize: std.builtin.OptimizeMode = .ReleaseFast; // https://github.com/libsdl-org/SDL_ttf/issues/566 (ReleaseFast prevents UBSAN from running)
@@ -25,6 +26,10 @@ pub fn setup(
             .link_libc = true,
         }),
     });
+
+    if (system_include_path) |val| {
+        lib.addSystemIncludePath(val);
+    }
 
     translate_c.addIncludePath(upstream.path("include"));
     lib.addIncludePath(upstream.path("include"));
