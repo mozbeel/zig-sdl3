@@ -1,0 +1,60 @@
+name: test
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+permissions:
+  contents: read
+env:
+  ZIG_VERSION: 0.15.1
+concurrency:
+  group: "test"
+  cancel-in-progress: false
+jobs:
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - name: Build Documentation Linux
+        run: zig build docs
+      - name: Build Documentation Windows
+        run: zig build docs -Dtarget=x86_64-windows
+  examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - name: Build Examples Linux
+        run: zig build examples
+      - name: Build Examples Windows
+        run: zig build examples -Dtarget=x86_64-windows
+  template:
+    name: Build Template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - name: Build Template Linux
+        run: cd template && zig build
+      - name: Build Template Windows
+        run: cd template && zig build -Dtarget=x86_64-windows
+  test:
+    name: Testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - name: Testing
+        run: zig build test
