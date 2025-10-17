@@ -48,6 +48,8 @@ jobs:
         run: cd template && zig build
       - name: Build Template Windows
         run: cd template && zig build -Dtarget=x86_64-windows
+      - name: Build Template Web
+        run: cd template && zig build -Dtarget=wasm32-emscripten
   test:
     name: Testing
     runs-on: ubuntu-latest
